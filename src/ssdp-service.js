@@ -5,7 +5,7 @@
 */
 
 var os = require("os");
-var ssdp = require('@achingbrain/ssdp')
+var ssdp = require('ssdp')
 var dbus = require('dbus-native');
 var cbus = dbus.systemBus();
 var sbus = ssdp()
