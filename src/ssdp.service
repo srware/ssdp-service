@@ -1,0 +1,12 @@
+[Unit]
+Description=Advertises a device on the local network using the SSDP protocol.
+Wants=connman.service
+
+[Service]
+Environment=NODE_ENV=production
+ExecStart=/bin/su root -c 'node /usr/lib/ssdp-service/ssdp-service.js'
+Restart=always
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target
