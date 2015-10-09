@@ -1,6 +1,6 @@
 {
   "name": "ssdp-service",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Advertises a device on the local network using the SSDP protocol.",
   "main": "src/ssdp-service.js",
   "dependencies": {
