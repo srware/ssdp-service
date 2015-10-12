@@ -42,7 +42,9 @@ process.on('SIGINT', function() {
 });
 
 // Checks connection state using Connman
-var checkState = function () {
+var checkState = function (callback) {
+	var online = null;
+
     	cbus.invoke({
         	destination: 'net.connman',
         	path: '/',
@@ -52,20 +54,29 @@ var checkState = function () {
     	}, function(error, response) {
         	if (error) {
         		console.error('Connman Error!', error);
-	    		sbus.stop(function (error) {
-    				process.exit(error ? 1 : 0)
-  			})
+	    		online = false;
         	} else {
 	    		if(response[0][1][1] != 'online') {
-				console.info('Network not connected, exiting!')
-				sbus.stop(function (error) {
-    					process.exit(error ? 1 : 0)
-  				})
-	    		}
+				online = false;
+			} else {
+				online = true;
+			}
         	}
+		
+		callback(online);
     	});
+}
 
-    	setTimeout(checkState,10000);
+var pollState = function () {
+	checkState(function(result) {
+		if(result == false) {
+			sbus.stop(function (error) {
+    				process.exit(error ? 1 : 0)
+			})
+		}
+	});
+
+	setTimeout(pollState,10000);
 }
 
 //
@@ -134,45 +145,53 @@ if(fs.existsSync(deviceInfoPath)) {
 }
 
 //
-// Start server
+// Service Begin
 //
 
-// Print error messages to the console
-sbus.on('error', console.error)
+// Check connection status and start SSDP if connected
+checkState(function(result) {
+	if(result == false) {
+		console.log('Network not connected... Exiting!');
+		process.exit(0);
+	} else {
+		// Print error messages to the console
+		sbus.on('error', console.error)
 
-// Start polling connection
-checkState()
+		console.log("Start advertising device")
 
-console.log("Start advertising device")
-
-// Advertise device
-sbus.advertise({
-	usn: 'upnp:rootdevice',
-	interval: 10000,
-  	details: function (callback) {
-    		callback(null, {
-      			'$': {
-        			'xmlns': 'urn:schemas-upnp-org:device-1-0',
-				'configId': '1'
-      			},
-      			'specVersion': {
-        			'major': '1',
-        			'minor': '1'
-      			},
-      			'device': {
-        			'deviceType': 'urn:schemas-upnp-org:device:Basic:1',
-				'productName':'Intel IoT Reference Platform',
-        			'friendlyName': name,
-        			'manufacturer': manufacturer,
-        			'manufacturerURL': manufacturerUrl,
-				'modelDescription': '',
-        			'modelName': model,
-        			'modelNumber': version,
-        			'modelURL': modelUrl,
-        			'serialNumber': serial,
-				'UDN': sbus.options.udn,
-        			'presentationURL': ''
-      			}
+		// Advertise device
+		sbus.advertise({
+			usn: 'upnp:rootdevice',
+			interval: 10000,
+		  	details: function (callback) {
+		    		callback(null, {
+		      			'$': {
+						'xmlns': 'urn:schemas-upnp-org:device-1-0',
+						'configId': '1'
+		      			},
+		      			'specVersion': {
+						'major': '1',
+						'minor': '1'
+		      			},
+		      			'device': {
+						'deviceType': 'urn:schemas-upnp-org:device:Basic:1',
+						'productName':'Intel IoT Reference Platform',
+						'friendlyName': name,
+						'manufacturer': manufacturer,
+						'manufacturerURL': manufacturerUrl,
+						'modelDescription': '',
+						'modelName': model,
+						'modelNumber': version,
+						'modelURL': modelUrl,
+						'serialNumber': serial,
+						'UDN': sbus.options.udn,
+						'presentationURL': ''
+		      			}
+				})
+			}
 		})
+
+		// Start polling connection
+		pollState()
 	}
-})
+});
