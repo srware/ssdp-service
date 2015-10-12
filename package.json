@@ -4,7 +4,7 @@
   "description": "Advertises a device on the local network using the SSDP protocol.",
   "main": "src/ssdp-service.js",
   "dependencies": {
-    "ssdp": "https://github.com/srware/ssdp/archive/v0.0.6.tar.gz",
+    "ssdp": "https://github.com/srware/ssdp/archive/v0.0.5-r2.tar.gz",
     "dbus-native": ">=0.2.0"
   },
   "author": "Scott Ware",
