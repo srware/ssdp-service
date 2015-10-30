@@ -22,8 +22,7 @@ var serial="12345678";
 var PORT = 8080;
 var edisonSerialPath = "/factory/serial_number"
 var defaultSerialPath = "/sys/class/dmi/id/board_serial"
-var deviceInfoPath = "/etc/device-info"
-var versionPath = "/etc/version"
+var buildInfoPath = "/etc/build-info"
 var namePath = "/etc/hostname"
 
 // Exit cleanly when executed using systemd
@@ -102,16 +101,6 @@ else if(fs.existsSync(defaultSerialPath)) {
 	}
 }
 
-// Get version
-if(fs.existsSync(versionPath)) {
-	try {
-		data = fs.readFileSync(versionPath);
-		version = data.toString();
-	} catch (err) {
-		console.log("Failed to read version file!")
-	}
-}
-
 // Get name
 if(fs.existsSync(namePath)) {
 	try {
@@ -122,21 +111,23 @@ if(fs.existsSync(namePath)) {
 	}
 }
 
-// Get device info
-if(fs.existsSync(deviceInfoPath)) {
+// Get build info
+if(fs.existsSync(buildInfoPath)) {
 	try {
-		data = fs.readFileSync(deviceInfoPath);
+		data = fs.readFileSync(buildInfoPath);
 
-		deviceInfo = data.toString().split("\n");
-		for(i in deviceInfo) {
-			if(deviceInfo[i].indexOf("Manufacturer=") > -1) {
-				manufacturer = deviceInfo[i].split("=")[1];
-			} else if(deviceInfo[i].indexOf("ManufacturerUrl=") > -1) {
-				manufacturerUrl = deviceInfo[i].split("=")[1];
-			} else if(deviceInfo[i].indexOf("Model=") > -1) {
-				model = deviceInfo[i].split("=")[1];
-			} else if(deviceInfo[i].indexOf("ModelUrl=") > -1) {
-				modelUrl = deviceInfo[i].split("=")[1];
+		buildInfo = data.toString().split("\n");
+		for(i in buildInfo) {
+			if(buildInfo[i].indexOf("MANUFACTURER=") > -1) {
+				manufacturer = buildInfo[i].split("=")[1];
+			} else if(buildInfo[i].indexOf("MANUFACTURER_URL=") > -1) {
+				manufacturerUrl = buildInfo[i].split("=")[1];
+			} else if(buildInfo[i].indexOf("MODEL=") > -1) {
+				model = buildInfo[i].split("=")[1];
+			} else if(buildInfo[i].indexOf("MODEL_URL=") > -1) {
+				modelUrl = buildInfo[i].split("=")[1];
+			} else if(buildInfo[i].indexOf("VERSION=") > -1) {
+				version = buildInfo[i].split("=")[1];
 			}
 		}
 	} catch (err) {
